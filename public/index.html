@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資安新聞中心 | Security News Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2a42;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #1f2937;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        header {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            padding: 40px 0 60px;
+        }
+        
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .logo-icon {
+            font-size: 48px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .stat-badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-badge .icon {
+            font-size: 1.1rem;
+        }
+        
+        .stat-badge .value {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+        
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+        }
+        
+        .filter-select {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            min-width: 160px;
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-cyan);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            border-color: #059669;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #10b981, var(--accent-green));
+        }
+        
+        .btn-primary.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .btn-primary.loading .icon {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        main {
+            padding: 40px 0 80px;
+        }
+        
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+        
+        .news-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: var(--shadow);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .source-badge {
+            background: var(--bg-secondary);
+            color: var(--accent-cyan);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .date {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .card-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .card-title a:hover {
+            color: var(--accent-cyan);
+        }
+        
+        .card-summary {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+        
+        .card-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .category-tag {
+            background: rgba(var(--tag-color-rgb, 6, 182, 212), 0.15);
+            color: var(--tag-color, var(--accent-cyan));
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .keywords {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast.success {
+            background: var(--accent-green);
+        }
+        
+        .toast.error {
+            background: var(--accent-red);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <h1>資安新聞中心</h1>
+                </div>
+                <p class="subtitle">Security News Hub - 即時掌握全球資安動態</p>
+                
+                <div class="stats-bar" id="statsBar">
+                    <div class="stat-badge">
+                        <span class="icon">📰</span>
+                        <span>新聞總數</span>
+                        <span class="value" id="totalCount">-</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="icon">🌐</span>
+                        <span>來源數</span>
+                        <span class="value" id="sourceCount">-</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="icon">🕐</span>
+                        <span>更新時間</span>
+                        <span class="value" id="updateTime">-</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="updateBtn" onclick="refreshNews()">
+                        <span class="icon">🔄</span>
+                        <span id="updateText">立即更新</span>
+                    </button>
+                    
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜尋新聞..." oninput="filterNews()">
+                    </div>
+                    
+                    <select class="filter-select" id="sourceFilter" onchange="filterNews()">
+                        <option value="">所有來源</option>
+                    </select>
+                    
+                    <select class="filter-select" id="categoryFilter" onchange="filterNews()">
+                        <option value="">所有分類</option>
+                    </select>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">準備中...</p>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <div class="news-grid" id="newsGrid">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>正在載入新聞...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>🛡️ 資安新聞收集器 | Powered by Python + Vercel</p>
+        </div>
+    </footer>
+    
+    <script>
+        let allNews = [];
+        let isLoading = false;
+        
+        // 分類顏色
+        const categoryColors = {
+            '惡意程式': '#e74c3c',
+            'Malware': '#e74c3c',
+            '漏洞': '#f39c12',
+            'Vulnerability': '#f39c12',
+            '資料外洩': '#9b59b6',
+            'Data Breach': '#9b59b6',
+            '駭客': '#e67e22',
+            'Hacking': '#e67e22',
+            '網路釣魚': '#1abc9c',
+            'Phishing': '#1abc9c',
+            '供應鏈': '#3498db',
+            'Supply Chain': '#3498db',
+            '雲端': '#00bcd4',
+            'Cloud': '#00bcd4',
+            '物聯網': '#8bc34a',
+            'IoT': '#8bc34a',
+            '政策': '#607d8b',
+            'Policy': '#607d8b'
+        };
+        
+        // 分類圖示
+        const categoryIcons = {
+            '惡意程式': '🦠', 'Malware': '🦠',
+            '漏洞': '🔓', 'Vulnerability': '🔓',
+            '資料外洩': '📤', 'Data Breach': '📤',
+            '駭客': '👤', 'Hacking': '👤',
+            '網路釣魚': '🎣', 'Phishing': '🎣',
+            '供應鏈': '🔗', 'Supply Chain': '🔗',
+            '雲端': '☁️', 'Cloud': '☁️',
+            '物聯網': '📱', 'IoT': '📱',
+            '政策': '📋', 'Policy': '📋'
+        };
+        
+        function getCategoryColor(category) {
+            for (const [key, color] of Object.entries(categoryColors)) {
+                if (category.includes(key)) return color;
+            }
+            return '#95a5a6';
+        }
+        
+        function getCategoryIcon(category) {
+            for (const [key, icon] of Object.entries(categoryIcons)) {
+                if (category.includes(key)) return icon;
+            }
+            return '📰';
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function renderNews(news) {
+            const grid = document.getElementById('newsGrid');
+            
+            if (!news || news.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <p>😔 沒有找到符合條件的新聞</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = news.map(item => {
+                const color = getCategoryColor(item.category || '');
+                const icon = getCategoryIcon(item.category || '');
+                const keywords = Array.isArray(item.keywords) 
+                    ? item.keywords.join(', ') 
+                    : (item.keywords_str || '');
+                
+                return `
+                    <article class="news-card" 
+                             data-category="${escapeHtml(item.category)}" 
+                             data-source="${escapeHtml(item.source)}">
+                        <div class="card-header">
+                            <span class="source-badge">${escapeHtml(item.source)}</span>
+                            <span class="date">${escapeHtml(item.date)}</span>
+                        </div>
+                        <h3 class="card-title">
+                            <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener">
+                                ${escapeHtml(item.title)}
+                            </a>
+                        </h3>
+                        <p class="card-summary">${escapeHtml(item.summary)}</p>
+                        <div class="card-footer">
+                            <span class="category-tag" style="--tag-color: ${color}">
+                                ${icon} ${escapeHtml(item.category)}
+                            </span>
+                            ${keywords ? `<span class="keywords">${escapeHtml(keywords)}</span>` : ''}
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+        
+        function updateFilters(data) {
+            const sourceFilter = document.getElementById('sourceFilter');
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            // 來源選項
+            const sources = [...new Set(data.news.map(n => n.source))];
+            sourceFilter.innerHTML = '<option value="">所有來源</option>' + 
+                sources.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+            
+            // 分類選項
+            const categories = [...new Set(data.news.map(n => n.category))];
+            categoryFilter.innerHTML = '<option value="">所有分類</option>' + 
+                categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+        }
+        
+        function filterNews() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const sourceFilter = document.getElementById('sourceFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            let filtered = allNews;
+            
+            if (search) {
+                filtered = filtered.filter(n => 
+                    (n.title && n.title.toLowerCase().includes(search)) ||
+                    (n.summary && n.summary.toLowerCase().includes(search)) ||
+                    (n.keywords_str && n.keywords_str.toLowerCase().includes(search))
+                );
+            }
+            
+            if (sourceFilter) {
+                filtered = filtered.filter(n => n.source === sourceFilter);
+            }
+            
+            if (categoryFilter) {
+                filtered = filtered.filter(n => n.category === categoryFilter);
+            }
+            
+            renderNews(filtered);
+        }
+        
+        async function loadNews() {
+            try {
+                const response = await fetch('/api/news');
+                const data = await response.json();
+                
+                allNews = data.news || [];
+                
+                // 更新統計
+                document.getElementById('totalCount').textContent = data.total_count || 0;
+                document.getElementById('sourceCount').textContent = (data.sources || []).length;
+                document.getElementById('updateTime').textContent = data.generated_at || '-';
+                
+                // 更新篩選選項
+                updateFilters(data);
+                
+                // 顯示新聞
+                renderNews(allNews);
+                
+            } catch (error) {
+                console.error('載入失敗:', error);
+                document.getElementById('newsGrid').innerHTML = `
+                    <div class="no-results">
+                        <p>⚠️ 載入失敗，請稍後再試</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function refreshNews() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const btn = document.getElementById('updateBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            btn.classList.add('loading');
+            document.getElementById('updateText').textContent = '更新中...';
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '30%';
+            progressText.textContent = '正在收集新聞...';
+            
+            try {
+                const response = await fetch('/api/collect', { method: 'POST' });
+                const result = await response.json();
+                
+                progressFill.style.width = '100%';
+                progressText.textContent = result.message;
+                
+                if (result.success && result.data) {
+                    allNews = result.data.news || [];
+                    
+                    document.getElementById('totalCount').textContent = result.data.total_count || 0;
+                    document.getElementById('sourceCount').textContent = (result.data.sources || []).length;
+                    document.getElementById('updateTime').textContent = result.data.generated_at || '-';
+                    
+                    updateFilters(result.data);
+                    renderNews(allNews);
+                    
+                    showToast('更新完成！', 'success');
+                } else {
+                    showToast(result.message || '更新失敗', 'error');
+                }
+                
+            } catch (error) {
+                showToast('更新失敗: ' + error.message, 'error');
+            } finally {
+                isLoading = false;
+                btn.classList.remove('loading');
+                document.getElementById('updateText').textContent = '立即更新';
+                
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 2000);
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Escape 鍵清空搜尋
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('sourceFilter').value = '';
+                document.getElementById('categoryFilter').value = '';
+                filterNews();
+            }
+        });
+        
+        // 初始載入
+        loadNews();
+    </script>
+</body>
+</html>
