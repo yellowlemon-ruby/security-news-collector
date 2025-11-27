@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資安新聞中心 | Security News Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2a42;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #1f2937;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        header {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            padding: 40px 0 60px;
+        }
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .logo { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .logo-icon { font-size: 48px; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-top: 8px; }
+        .stats-bar { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; justify-content: center; }
+        .stat-badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-badge .value { color: var(--accent-cyan); font-weight: 600; }
+        .controls { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .search-box { position: relative; flex: 1; max-width: 400px; min-width: 250px; }
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .search-box input:focus { outline: none; border-color: var(--accent-cyan); }
+        .search-box::before { content: '🔍'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); }
+        .filter-select {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            min-width: 160px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: var(--bg-card-hover); border-color: var(--accent-cyan); }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-green), #059669); border-color: #059669; color: white; }
+        .btn-primary:hover { background: linear-gradient(135deg, #10b981, var(--accent-green)); }
+        .btn-primary.loading { pointer-events: none; opacity: 0.7; }
+        .btn-primary.loading .icon { animation: spin 1s linear infinite; }
+        .btn-danger { background: var(--accent-red); border-color: var(--accent-red); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .progress-container {
+            width: 100%; max-width: 600px; margin-top: 20px; padding: 16px 24px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); display: none;
+        }
+        .progress-bar { height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green)); width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 0.9rem; color: var(--text-secondary); text-align: center; }
+        
+        /* 來源管理 */
+        .source-manager { margin-top: 40px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; width: 100%; max-width: 1000px; }
+        .source-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--bg-secondary); cursor: pointer; }
+        .source-header:hover { background: var(--bg-card-hover); }
+        .source-header h3 { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
+        .source-header .toggle-icon { transition: transform 0.3s; }
+        .source-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .source-content { padding: 24px; display: none; }
+        .source-content.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .add-source-form { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .add-source-form input {
+            flex: 1; min-width: 200px; padding: 12px 16px;
+            border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+            background: var(--bg-secondary); color: var(--text-primary);
+        }
+        .add-source-form input:focus { outline: none; border-color: var(--accent-cyan); }
+        .source-actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .source-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+        .source-item {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .source-item.default { border-left: 3px solid var(--accent-cyan); }
+        .source-item.custom { border-left: 3px solid var(--accent-purple); }
+        .source-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .source-name { font-weight: 600; word-break: break-word; }
+        .source-type-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+        .source-type-badge.default { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+        .source-type-badge.custom { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .source-url { font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; word-break: break-all; }
+        .source-item-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .source-item-actions .btn { padding: 6px 12px; font-size: 0.8rem; }
+        
+        main { padding: 40px 0 80px; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
+        .news-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius); padding: 24px; transition: all 0.2s;
+            display: flex; flex-direction: column;
+        }
+        .news-card:hover { transform: translateY(-4px); border-color: var(--accent-cyan); box-shadow: var(--shadow); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .news-source-badge { background: var(--bg-secondary); color: var(--accent-cyan); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; }
+        .date { color: var(--text-muted); font-size: 0.85rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; line-height: 1.4; }
+        .card-title a { color: var(--text-primary); text-decoration: none; }
+        .card-title a:hover { color: var(--accent-cyan); }
+        .card-summary { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; flex: 1; }
+        .card-footer { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .category-tag { padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+        .keywords { color: var(--text-muted); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+        
+        .loading-container { display: flex; flex-direction: column; align-items: center; padding: 80px 20px; color: var(--text-secondary); }
+        .loading-spinner { width: 50px; height: 50px; border: 3px solid var(--border-color); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        
+        .toast { position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; border-radius: var(--radius-sm); color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s; }
+        .toast.success { background: var(--accent-green); }
+        .toast.error { background: var(--accent-red); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 24px; max-width: 500px; width: 90%; transform: scale(0.9); transition: transform 0.3s; }
+        .modal-overlay.show .modal { transform: scale(1); }
+        .modal h3 { margin-bottom: 16px; font-size: 1.2rem; }
+        .modal-form { display: flex; flex-direction: column; gap: 16px; }
+        .modal-form label { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .modal-form input { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); }
+        .modal-form input:focus { outline: none; border-color: var(--accent-cyan); }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+        
+        footer { text-align: center; padding: 40px 20px; color: var(--text-muted); border-top: 1px solid var(--border-color); }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .news-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+            .search-box { max-width: 100%; }
+            .source-list { grid-template-columns: 1fr; }
+            .add-source-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <h1>資安新聞中心</h1>
+                </div>
+                <p class="subtitle">Security News Hub - 即時掌握全球資安動態</p>
+                
+                <div class="stats-bar">
+                    <div class="stat-badge"><span>📰</span><span>新聞總數</span><span class="value" id="totalCount">-</span></div>
+                    <div class="stat-badge"><span>🌐</span><span>來源數</span><span class="value" id="sourceCount">-</span></div>
+                    <div class="stat-badge"><span>🕐</span><span>更新時間</span><span class="value" id="updateTime">-</span></div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="updateBtn" onclick="refreshNews()">
+                        <span class="icon">🔄</span>
+                        <span id="updateText">立即更新</span>
+                    </button>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜尋新聞..." oninput="filterNews()">
+                    </div>
+                    <select class="filter-select" id="sourceFilter" onchange="filterNews()"><option value="">所有來源</option></select>
+                    <select class="filter-select" id="categoryFilter" onchange="filterNews()"><option value="">所有分類</option></select>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                    <p class="progress-text" id="progressText">準備中...</p>
+                </div>
+                
+                <!-- 來源管理 -->
+                <div class="source-manager">
+                    <div class="source-header collapsed" onclick="toggleSourceManager()">
+                        <h3><span>🌐</span><span>新聞來源管理</span></h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="source-content" id="sourceContent">
+                        <div class="add-source-form">
+                            <input type="text" id="newSourceName" placeholder="來源名稱（如：資安人）">
+                            <input type="text" id="newSourceUrl" placeholder="RSS Feed 網址（如：https://example.com/rss）">
+                            <button class="btn btn-primary" onclick="addSource()"><span>➕</span><span>新增</span></button>
+                        </div>
+                        <div class="source-actions">
+                            <button class="btn btn-sm" onclick="exportSources()"><span>📥</span><span>匯出設定</span></button>
+                            <button class="btn btn-sm" onclick="document.getElementById('importFile').click()"><span>📤</span><span>匯入設定</span></button>
+                            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSources(event)">
+                            <button class="btn btn-sm btn-danger" onclick="resetSources()"><span>🔄</span><span>重設預設</span></button>
+                        </div>
+                        <div class="source-list" id="sourceList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <div class="news-grid" id="newsGrid">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>正在載入新聞...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer><div class="container"><p>🛡️ 資安新聞收集器 | Powered by Python + Vercel</p></div></footer>
+    
+    <!-- 編輯 Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h3>✏️ 編輯來源</h3>
+            <div class="modal-form">
+                <div><label>來源名稱</label><input type="text" id="editSourceName"></div>
+                <div><label>RSS Feed 網址</label><input type="text" id="editSourceUrl"></div>
+                <input type="hidden" id="editSourceOriginalName">
+                <div class="modal-actions">
+                    <button class="btn" onclick="closeEditModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveEditSource()">儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let allNews = [];
+        let isLoading = false;
+        
+        const defaultSources = {
+            'iThome 資安': 'https://www.ithome.com.tw/rss/security',
+            'TWCERT/CC': 'https://www.twcert.org.tw/rss',
+            'The Hacker News': 'https://feeds.feedburner.com/TheHackersNews',
+            'Krebs on Security': 'https://krebsonsecurity.com/feed/',
+            'BleepingComputer': 'https://www.bleepingcomputer.com/feed/',
+            'Dark Reading': 'https://www.darkreading.com/rss.xml',
+            'SecurityWeek': 'https://feeds.feedburner.com/securityweek',
+            'Threatpost': 'https://threatpost.com/feed/',
+            'HackRead': 'https://www.hackread.com/feed/',
+            'Sophos News': 'https://news.sophos.com/en-us/feed/'
+        };
+        
+        const categoryColors = {
+            '惡意程式': '#e74c3c', 'Malware': '#e74c3c',
+            '漏洞': '#f39c12', 'Vulnerability': '#f39c12',
+            '資料外洩': '#9b59b6', 'Data Breach': '#9b59b6',
+            '駭客': '#e67e22', 'Hacking': '#e67e22',
+            '網路釣魚': '#1abc9c', 'Phishing': '#1abc9c',
+            '供應鏈': '#3498db', 'Supply Chain': '#3498db',
+            '雲端': '#00bcd4', 'Cloud': '#00bcd4',
+            '物聯網': '#8bc34a', 'IoT': '#8bc34a',
+            '政策': '#607d8b', 'Policy': '#607d8b'
+        };
+        
+        const categoryIcons = {
+            '惡意程式': '🦠', 'Malware': '🦠', '漏洞': '🔓', 'Vulnerability': '🔓',
+            '資料外洩': '📤', 'Data Breach': '📤', '駭客': '👤', 'Hacking': '👤',
+            '網路釣魚': '🎣', 'Phishing': '🎣', '供應鏈': '🔗', 'Supply Chain': '🔗',
+            '雲端': '☁️', 'Cloud': '☁️', '物聯網': '📱', 'IoT': '📱',
+            '政策': '📋', 'Policy': '📋'
+        };
+        
+        // 來源管理
+        function getSources() {
+            const saved = localStorage.getItem('securityNewsSources');
+            if (saved) { try { return JSON.parse(saved); } catch(e) {} }
+            return { ...defaultSources };
+        }
+        
+        function saveSources(sources) {
+            localStorage.setItem('securityNewsSources', JSON.stringify(sources));
+        }
+        
+        function toggleSourceManager() {
+            document.querySelector('.source-header').classList.toggle('collapsed');
+            const content = document.getElementById('sourceContent');
+            content.classList.toggle('show');
+            if (content.classList.contains('show')) renderSources();
+        }
+        
+        function renderSources() {
+            const sources = getSources();
+            const list = document.getElementById('sourceList');
+            list.innerHTML = Object.entries(sources).map(([name, url]) => {
+                const isDefault = defaultSources[name] === url;
+                return `
+                    <div class="source-item ${isDefault ? 'default' : 'custom'}">
+                        <div class="source-item-header">
+                            <span class="source-name">${escapeHtml(name)}</span>
+                            <span class="source-type-badge ${isDefault ? 'default' : 'custom'}">${isDefault ? '📌 預設' : '➕ 自訂'}</span>
+                        </div>
+                        <div class="source-url">${escapeHtml(url)}</div>
+                        <div class="source-item-actions">
+                            <button class="btn btn-sm" onclick="editSource('${escapeJs(name)}', '${escapeJs(url)}')">✏️ 編輯</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSource('${escapeJs(name)}')">🗑️ 刪除</button>
+                        </div>
+                    </div>`;
+            }).join('');
+            document.getElementById('sourceCount').textContent = Object.keys(sources).length;
+        }
+        
+        function addSource() {
+            const name = document.getElementById('newSourceName').value.trim();
+            const url = document.getElementById('newSourceUrl').value.trim();
+            if (!name) return showToast('請輸入來源名稱', 'error');
+            if (!url || !url.startsWith('http')) return showToast('請輸入正確的網址', 'error');
+            const sources = getSources();
+            if (sources[name]) return showToast('此來源已存在', 'error');
+            sources[name] = url;
+            saveSources(sources);
+            renderSources();
+            document.getElementById('newSourceName').value = '';
+            document.getElementById('newSourceUrl').value = '';
+            showToast(`已新增: ${name}`, 'success');
+        }
+        
+        function editSource(name, url) {
+            document.getElementById('editSourceOriginalName').value = name;
+            document.getElementById('editSourceName').value = name;
+            document.getElementById('editSourceUrl').value = url;
+            document.getElementById('editModal').classList.add('show');
+        }
+        
+        function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
+        
+        function saveEditSource() {
+            const orig = document.getElementById('editSourceOriginalName').value;
+            const name = document.getElementById('editSourceName').value.trim();
+            const url = document.getElementById('editSourceUrl').value.trim();
+            if (!name || !url) return showToast('請填寫完整', 'error');
+            const sources = getSources();
+            if (name !== orig && sources[name]) return showToast('名稱已存在', 'error');
+            delete sources[orig];
+            sources[name] = url;
+            saveSources(sources);
+            renderSources();
+            closeEditModal();
+            showToast(`已更新: ${name}`, 'success');
+        }
+        
+        function deleteSource(name) {
+            if (!confirm(`確定刪除「${name}」？`)) return;
+            const sources = getSources();
+            delete sources[name];
+            saveSources(sources);
+            renderSources();
+            showToast(`已刪除: ${name}`, 'success');
+        }
+        
+        function exportSources() {
+            const blob = new Blob([JSON.stringify(getSources(), null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'security_news_sources.json';
+            a.click();
+            showToast('已匯出', 'success');
+        }
+        
+        function importSources(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    const sources = getSources();
+                    let count = 0;
+                    Object.entries(imported).forEach(([n, u]) => {
+                        if (typeof u === 'string' && u.startsWith('http')) { sources[n] = u; count++; }
+                    });
+                    saveSources(sources);
+                    renderSources();
+                    showToast(`已匯入 ${count} 個`, 'success');
+                } catch(e) { showToast('匯入失敗', 'error'); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        function resetSources() {
+            if (!confirm('確定重設？自訂來源將被清除。')) return;
+            saveSources({ ...defaultSources });
+            renderSources();
+            showToast('已重設', 'success');
+        }
+        
+        // 工具函數
+        function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function escapeJs(t) { return t.replace(/'/g, "\\'").replace(/"/g, '\\"'); }
+        function getCategoryColor(c) { for (const [k,v] of Object.entries(categoryColors)) if (c?.includes(k)) return v; return '#95a5a6'; }
+        function getCategoryIcon(c) { for (const [k,v] of Object.entries(categoryIcons)) if (c?.includes(k)) return v; return '📰'; }
+        
+        function renderNews(news) {
+            const grid = document.getElementById('newsGrid');
+            if (!news?.length) { grid.innerHTML = '<div class="no-results"><p>😔 沒有找到新聞</p></div>'; return; }
+            grid.innerHTML = news.map(item => {
+                const color = getCategoryColor(item.category);
+                const icon = getCategoryIcon(item.category);
+                const kw = Array.isArray(item.keywords) ? item.keywords.join(', ') : (item.keywords_str || '');
+                return `
+                    <article class="news-card" data-category="${escapeHtml(item.category)}" data-source="${escapeHtml(item.source)}">
+                        <div class="card-header">
+                            <span class="news-source-badge">${escapeHtml(item.source)}</span>
+                            <span class="date">${escapeHtml(item.date)}</span>
+                        </div>
+                        <h3 class="card-title"><a href="${escapeHtml(item.link)}" target="_blank">${escapeHtml(item.title)}</a></h3>
+                        <p class="card-summary">${escapeHtml(item.summary)}</p>
+                        <div class="card-footer">
+                            <span class="category-tag" style="background:${color}22;color:${color}">${icon} ${escapeHtml(item.category)}</span>
+                            ${kw ? `<span class="keywords">${escapeHtml(kw)}</span>` : ''}
+                        </div>
+                    </article>`;
+            }).join('');
+        }
+        
+        function updateFilters(data) {
+            const sf = document.getElementById('sourceFilter');
+            const cf = document.getElementById('categoryFilter');
+            const sources = [...new Set(data.news.map(n => n.source))];
+            const cats = [...new Set(data.news.map(n => n.category))];
+            sf.innerHTML = '<option value="">所有來源</option>' + sources.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+            cf.innerHTML = '<option value="">所有分類</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+        }
+        
+        function filterNews() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const sf = document.getElementById('sourceFilter').value;
+            const cf = document.getElementById('categoryFilter').value;
+            let filtered = allNews;
+            if (q) filtered = filtered.filter(n => n.title?.toLowerCase().includes(q) || n.summary?.toLowerCase().includes(q) || n.keywords_str?.toLowerCase().includes(q));
+            if (sf) filtered = filtered.filter(n => n.source === sf);
+            if (cf) filtered = filtered.filter(n => n.category === cf);
+            renderNews(filtered);
+        }
+        
+        async function loadNews() {
+            try {
+                const res = await fetch('/api/news');
+                const data = await res.json();
+                allNews = data.news || [];
+                document.getElementById('totalCount').textContent = data.total_count || 0;
+                document.getElementById('sourceCount').textContent = Object.keys(getSources()).length;
+                document.getElementById('updateTime').textContent = data.generated_at || '-';
+                updateFilters(data);
+                renderNews(allNews);
+            } catch(e) {
+                document.getElementById('newsGrid').innerHTML = `<div class="no-results"><p>⚠️ 載入失敗</p><p style="font-size:0.9rem;margin-top:10px">${e.message}</p></div>`;
+            }
+        }
+        
+        async function refreshNews() {
+            if (isLoading) return;
+            isLoading = true;
+            const btn = document.getElementById('updateBtn');
+            const pc = document.getElementById('progressContainer');
+            const pf = document.getElementById('progressFill');
+            const pt = document.getElementById('progressText');
+            
+            btn.classList.add('loading');
+            document.getElementById('updateText').textContent = '更新中...';
+            pc.style.display = 'block';
+            pf.style.width = '30%';
+            pt.textContent = '正在收集新聞...';
+            
+            try {
+                const res = await fetch('/api/collect', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sources: getSources() })
+                });
+                const result = await res.json();
+                pf.style.width = '100%';
+                pt.textContent = result.message;
+                if (result.success && result.data) {
+                    allNews = result.data.news || [];
+                    document.getElementById('totalCount').textContent = result.data.total_count || 0;
+                    document.getElementById('updateTime').textContent = result.data.generated_at || '-';
+                    updateFilters(result.data);
+                    renderNews(allNews);
+                    showToast('更新完成！', 'success');
+                } else showToast(result.message || '更新失敗', 'error');
+            } catch(e) { showToast('更新失敗: ' + e.message, 'error'); }
+            finally {
+                isLoading = false;
+                btn.classList.remove('loading');
+                document.getElementById('updateText').textContent = '立即更新';
+                setTimeout(() => pc.style.display = 'none', 2000);
+            }
+        }
+        
+        function showToast(msg, type = 'success') {
+            document.querySelector('.toast')?.remove();
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+        
+        // 事件監聽
+        document.getElementById('newSourceUrl').addEventListener('keydown', e => { if (e.key === 'Enter') addSource(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('editModal').classList.contains('show')) closeEditModal();
+                else { document.getElementById('searchInput').value = ''; document.getElementById('sourceFilter').value = ''; document.getElementById('categoryFilter').value = ''; filterNews(); }
+            }
+        });
+        document.getElementById('editModal').addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) closeEditModal(); });
+        
+        // 初始載入
+        loadNews();
+    </script>
+</body>
+</html>
